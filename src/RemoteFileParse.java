@@ -2,21 +2,11 @@ import java.util.*;
 import java.util.logging.*;
 import java.lang.reflect.*;
 import java.nio.channels.FileLockInterruptionException;
-import java.util.regex.Pattern;
 import javax.xml.ws.http.HTTPException;
-
 import org.json.JSONObject;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 import com.google.gson.Gson;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import org.apache.http.client.*;
-import org.apache.http.client.methods.HttpPost;
+import java.io.*;
 //import org.apache.http.impl.client.HttpClientBuilder;
 import java.time.*;
 import org.apache.http.*;
@@ -37,7 +27,7 @@ public class RemoteFileParse {
 		      };
 		  });
 		
-		if (args != null && args.length > 3) {
+		if (args != null && args.length >= 3) {
 			//Set the Buyer object Model with the incoming args provided in the command line args IE.  IPRemoteParse.exe 
 			Models.Buyer buyerInfo = new Models.Buyer(Integer.parseInt(args[0]), args[1], args[2], args[3]);
 			
@@ -90,12 +80,10 @@ public class RemoteFileParse {
 	                			}
 	                			//Our payment object should now be populated from the parsed line, now add to the collection that we shall POST to API as JSON.
 	                			payments.add(invoice);
-	                		}
-	                	
+	                		}	                	
 	                	} catch (Exception ex) {
 	                		//log any exception mapping fields
-	                	}
-	                	
+	                	}	                	
 	                }
 	                else {
 	                	//we will take the 1st row in the csv file and do a sanity check of header column names against our container object utilizing reflection.  This will make for
@@ -139,7 +127,6 @@ public class RemoteFileParse {
 		        } catch (HTTPException ex) {
 		        	
 		        }
-        
         }
         
 		return true;
@@ -213,7 +200,7 @@ public class RemoteFileParse {
 				//find the files matching the user defined and pre-configured file mask pattern
 				files = dir.listFiles(fileMaskFilter);			
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "There was an error while attempting to access the configured directory for payment file processing", Thread.currentThread().getStackTrace());
+				logger.log(Level.SEVERE, "There was an error while attempting to access the configured directory for payment file processing", Thread.currentThread().getStackTrace());
 				e.printStackTrace();
 				//Log this locally in custom event log and send.  Log(e.printStackTrace());
 			} 
