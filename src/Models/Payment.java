@@ -33,6 +33,7 @@ public class Payment {
 		return supplierId;
 	}
 
+	@ColumnAliases(aliases={"supplierId", "supplierID"})
 	public void setSupplierID(String supplierId) {
 		this.supplierId = supplierId;
 	}
@@ -41,6 +42,7 @@ public class Payment {
 		return supplierName;
 	}
 
+	@ColumnAliases(aliases={"supplierName"})	
 	public void setSupplierName(String supplierName) {
 		this.supplierName = supplierName;
 	}
@@ -49,6 +51,7 @@ public class Payment {
 		return supplierAddressLine1;
 	}
 
+	@ColumnAliases(aliases={"supplierAddressLine1, supplierAddressLine"})		
 	public void setSupplierAddressLine1(String supplierAddressLine1) {
 		this.supplierAddressLine1 = supplierAddressLine1;
 	}
@@ -57,6 +60,7 @@ public class Payment {
 		return supplierAddressLine2;
 	}
 
+	@ColumnAliases(aliases={"supplierAddressLine2"})		
 	public void setSupplierAddressLine2(String supplierAddressLine2) {
 		this.supplierAddressLine2 = supplierAddressLine2;
 	}
@@ -65,6 +69,7 @@ public class Payment {
 		return supplierCity;
 	}
 
+	@ColumnAliases(aliases={"supplierCity"})	
 	public void setSupplierCity(String supplierCity) {
 		this.supplierCity = supplierCity;
 	}
@@ -73,6 +78,7 @@ public class Payment {
 		return supplierState;
 	}
 
+	@ColumnAliases(aliases={"supplierState"})	
 	public void setSupplierState(String supplierState) {
 		this.supplierState = supplierState;
 	}
@@ -81,6 +87,7 @@ public class Payment {
 		return supplierZip;
 	}
 
+	@ColumnAliases(aliases={"supplierZip"})	
 	public void setSupplierZip(String supplierZip) {
 		this.supplierZip = supplierZip;
 	}
@@ -89,6 +96,7 @@ public class Payment {
 		return supplierEmail;
 	}
 
+	@ColumnAliases(aliases={"supplierEmail"})		
 	public void setSupplierEmail(String supplierEmail) {
 		this.supplierEmail = supplierEmail;
 	}
@@ -97,6 +105,7 @@ public class Payment {
 		return docNumber;
 	}
 
+	@ColumnAliases(aliases={"docNumber"})	
 	public void setDocNumber(String docNumber) {
 		this.docNumber = docNumber;
 	}
@@ -105,22 +114,25 @@ public class Payment {
 		return docDate;
 	}
 
+	@ColumnAliases(aliases={"docDate"})	
+	public void setDocDate(String docDate) {
+		this.docDate = docDate;
+	}
+	
 	public String getDocType() {
 		return docType;
 	}
-	
+
+	@ColumnAliases(aliases={"docType"})		
 	public void setDocType(String docType) {
 	    this.docType = docType;
-	}
-	
-	public void setDocDate(String docDate) {
-		this.docDate = docDate;
 	}
 
 	public String getDocAmount() {
 		return docAmount;
 	}
 
+	@ColumnAliases(aliases={"docAmount"})		
 	public void setDocAmount(String docAmount) {
 		this.docAmount = docAmount;
 	}
@@ -129,6 +141,7 @@ public class Payment {
 		return reference;
 	}
 
+	@ColumnAliases(aliases={"reference"})	
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
@@ -137,6 +150,7 @@ public class Payment {
 		return bankAccountId;
 	}
 
+	@ColumnAliases(aliases={"bankAccountId", "bankAccountID", "BankAccountId"})		
 	public void setBankAccountID(String bankAccountId) {
 		this.bankAccountId = bankAccountId;
 	}
@@ -145,6 +159,7 @@ public class Payment {
 		return pmtRef;
 	}
 
+	@ColumnAliases(aliases={"pmtRef"})		
 	public void setPmtRef(String pmtRef) {
 		this.pmtRef = pmtRef;
 	}
@@ -153,6 +168,7 @@ public class Payment {
 		return _void;
 	}
 
+	@ColumnAliases(aliases={"void"})			
 	public void setVoid(String _void) {
 		this._void = _void;
 	}
