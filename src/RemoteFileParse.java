@@ -55,11 +55,11 @@ public class RemoteFileParse {
         String line = "";
 		String[] columns;
 		List<Models.Payment> payments = null;
-		headerOrdinals = new ArrayList<Map.Entry<String, Integer>>();
 		Boolean headerRow = true;
 		
         	//Get all possible files in the configured directory that match our file mask and iterate, parse and send json payload for each
-        for (File file:findFileByMask(buyerInfo)) {		
+        for (File file:findFileByMask(buyerInfo)) {	
+    		headerOrdinals = new ArrayList<Map.Entry<String, Integer>>();
         	try {
         		headerRow = true;
         		payments = new ArrayList<Models.Payment>();
