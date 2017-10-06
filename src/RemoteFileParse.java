@@ -67,8 +67,7 @@ public class RemoteFileParse {
 	            br = new BufferedReader(new FileReader(file.getPath()));
 	            while ((line = br.readLine()) != null) {
 	                //split each line utilizing the RegEx pattern which will perfectly split CSV's and ignore commas within quotes or tics for a string field
-	            	csvParser regExParser = new csvParser();
-	            	columns = regExParser.parse(line);
+	            	columns = new csvParser().parse(line);
 	                            	
 	                //for the first row, grab the column header names and match against our container object, each iteration thereafter, just stuff values in our object[] which will become a json payload
 	                if (!headerRow) { 
