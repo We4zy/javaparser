@@ -101,7 +101,7 @@ public class RemoteFileParse {
 	                	//we will take the 1st row in the csv file and do a sanity check of header column names against our container object utilizing reflection.  This will make for
 	                	// only clean and matching data to be sent to our API via json.  
 	                	columnHeaders = columns;
-	                	matchHeadersAgainstModel(columnHeaders);
+	                	matchHeadersAgainstModel(columnHeaders, file.getName());
 	                	headerRow = false;
 	                }             
             	}
@@ -147,7 +147,7 @@ public class RemoteFileParse {
 	
 	//A little helper method to match the column header names against our payment object just for a sanity check.  This way we can log any discrepancies.
 	//This entire method is really only a sanity check to enable verbose and concise logging on both sides, out in the field and to us via API
-	public static void matchHeadersAgainstModel(String[] columnHeaders)
+	public static void matchHeadersAgainstModel(String[] columnHeaders, String fileName)
 	{
 		Integer discrepencyCount = 0;
 		String errorMessage = "";
@@ -190,7 +190,7 @@ public class RemoteFileParse {
 			logger.log(Level.WARNING, errorMessage, Thread.currentThread().getStackTrace());
 		}
 		
-		errorMessage = "File found mapped perfectly.  No file format errors found." + Instant.now();
+		errorMessage = String.format("File %s mapped perfectly.  No file format errors found on %s", fileName, Instant.now());
 		System.out.println(errorMessage);
 		//log the results locally and send collected info to our API for remote logging
 	}
