@@ -51,18 +51,18 @@ public class RemoteFileParse {
 	}
 	 
 	public static boolean parseFile(Models.Buyer buyerInfo) {		
-        String csvFile = buyerInfo.getFilePath();
         BufferedReader br = null;
         String line = "";
-		String[] columns; Boolean ret = true;
-		List<Models.Payment> payments = new ArrayList<Models.Payment>();
+		String[] columns;
+		List<Models.Payment> payments = null;
 		headerOrdinals = new ArrayList<Map.Entry<String, Integer>>();
 		Boolean headerRow = true;
 		
-        try {
         	//Get all possible files in the configured directory that match our file mask and iterate, parse and send json payload for each
-        	for (File file:findFileByMask(buyerInfo)) {
-        	
+        for (File file:findFileByMask(buyerInfo)) {		
+        	try {
+        		headerRow = true;
+        		payments = new ArrayList<Models.Payment>();
 	        	String[] columnHeaders = null;
 	            br = new BufferedReader(new FileReader(file.getPath()));
 	            while ((line = br.readLine()) != null) {
@@ -105,38 +105,43 @@ public class RemoteFileParse {
 	                	headerRow = false;
 	                }             
             	}
-        	}
-        } catch (FileNotFoundException e) {
-			logger.log(Level.WARNING, String.format("No file found to process : %s", e.getMessage()), Thread.currentThread().getStackTrace());
-            e.printStackTrace();
-            //Log this locally in custom event log and send
-        } catch (IOException e) {
-			logger.log(Level.WARNING, String.format("IOException when attempting to access payment file for processing : %s", e.getMessage()), Thread.currentThread().getStackTrace());
-            e.printStackTrace();
-            //log both locally and send log to us via API call
-        } finally {
-            if (br != null) {
-                try { 
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    //again, log locally and to us via API any problems here
-                }
-            }
-        }
-		//POST our beautifully constructed payment[] as JSON to our API
-        try {
-        	//HttpClient httpClient = HttpClientBuilder.create().build();
-        	//HttpPost post = new HttpPost(buyerInfo.getApiLogUrl());        	
-        	
-        } catch (HTTPException ex) {
-        	
+	    			    		   	
+		        } catch (FileNotFoundException e) {
+					logger.log(Level.WARNING, String.format("No file found to process : %s", e.getMessage()), Thread.currentThread().getStackTrace());
+		            e.printStackTrace();
+		            //Log this locally in custom event log and send
+		        } catch (IOException e) {
+					logger.log(Level.WARNING, String.format("IOException when attempting to access payment file for processing : %s", e.getMessage()), Thread.currentThread().getStackTrace());
+		            e.printStackTrace();
+		            //log both locally and send log to us via API call
+		        } finally {
+		            if (br != null) {
+		                try { 
+		                    br.close();
+		                } catch (IOException e) {
+		                    e.printStackTrace();
+		                    //again, log locally and to us via API any problems here
+		                }
+		            }
+		        }
+		
+		        String json = new Gson().toJson(payments);
+		        //the above payload is the payload to send the payment batch to our API
+				System.out.println(json);	
+				
+				//POST our beautifully constructed invoice[] as JSON to our API
+		        try {
+		        	//We want the payment batch to be processed as a batch for good batch logging, so each file's payload should be posted to the API separately as json for adequate batch processing
+		        	
+		        	//HttpClient httpClient = HttpClientBuilder.create().build();
+		        	//HttpPost post = new HttpPost(buyerInfo.getApiLogUrl());        	
+		        	// post.invoke(new Gson().toJson(payments));
+		        } catch (HTTPException ex) {
+		        	
+		        }
+        
         }
         
-		//using gson to convert object List<> to json
-        String json = new Gson().toJson(payments);
-        //the above payload is the payload to send the payment batch to our API
-		System.out.println(json);	
 		return true;
 	}
 	
