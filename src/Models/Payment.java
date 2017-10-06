@@ -24,6 +24,7 @@ public class Payment {
 		return clientId;
 	}
 
+	@ColumnAliases(aliases={"clientId", "clientID"})
 	public void setClientID(String clientId) {
 		this.clientId = clientId;
 	}
