@@ -78,7 +78,6 @@ public class RemoteFileParse {
 	                		//match the column header key string in map to the property in our container object.  Then use ordinal in map to snatch correct value from the String[]
 	                		Integer i = 0;
 	                		for (Map.Entry<String, Integer> colMap:headerOrdinals) {
-	            				//String setterName = String.format("set%s", colMap.getKey());
 	                			Method methodProperty = invoice.getClass().getMethod(String.format("set%s", colMap.getKey()), new Class[] {String.class});
 	                			
 	                			try {
@@ -129,7 +128,7 @@ public class RemoteFileParse {
 		//POST our beautifully constructed payment[] as JSON to our API
         try {
         	//HttpClient httpClient = HttpClientBuilder.create().build();
-        	//HttpPost post = new HttpPost(buyerInfo.GetApiLogUrl());        	
+        	//HttpPost post = new HttpPost(buyerInfo.getApiLogUrl());        	
         	
         } catch (HTTPException ex) {
         	
@@ -156,13 +155,11 @@ public class RemoteFileParse {
 		 for (String column:columnHeaders) {
 			 //Making a basic List of tuples to use as a mapping matrix to pluck out the values dynamically 
 			 //when we actually populate a list of objects in the parseFile method 
-			@SuppressWarnings("rawtypes")
-			Map.Entry<String, Integer> headerOrdinal = new AbstractMap.SimpleEntry(column, i);
+			Map.Entry<String, Integer> headerOrdinal = new AbstractMap.SimpleEntry<String, Integer>(column, i);
 			headerOrdinals.add(headerOrdinal); i++;
 			  
 			try {
 				//Attempt to find the setter within our model container object.  If not we need report this to local log and remote log to us via API
-				//String setterName = "set" + column;
 				methodName = new Models.Payment().getClass().getMethod(String.format("set%s", column),  new Class[] {String.class});
 			} catch (NoSuchMethodException e) {
 				errorMessage += String.format("Unknown column header named: %s was found in payment file;  Cannot map this column to our invoice object. \n", column);
@@ -200,7 +197,7 @@ public class RemoteFileParse {
 		//Start Filter
 		FilenameFilter fileMaskFilter = new FilenameFilter() {
 			public boolean accept(File file, String name) {
-				if (name.startsWith(buyerInfo.getFileMask())) {
+				if (name.contains(buyerInfo.getFileMask())) {
 					return true;
 				} else {
 					return false;

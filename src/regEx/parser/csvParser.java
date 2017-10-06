@@ -13,13 +13,13 @@ public class csvParser {
     private final Pattern csvPattern = Pattern.compile("\"([^\"]*)\"|(?<=,|^)([^,]*)(?:,|$)");  
     private ArrayList<String> allMatches = null;    
     private Matcher matcher = null;
-    private String match = null;
+    //private String match = null;
     private int size;
 
     public csvParser() {        
         allMatches = new ArrayList<String>();
         matcher = null;
-        match = null;
+        //match = null;
     }
 
     public String[] parse(String csvLine) {
