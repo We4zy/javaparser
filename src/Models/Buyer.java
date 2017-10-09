@@ -1,5 +1,9 @@
 package Models;
 
+/**
+ * @author rory richter
+ *
+ */
 public class Buyer {
 
 	private Integer _buyerId;

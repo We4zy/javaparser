@@ -1,5 +1,9 @@
 package Models;
 
+/**
+ * @author rory richter
+ *
+ */
 public class Payment {
 	private String clientId;
 	private String supplierId;

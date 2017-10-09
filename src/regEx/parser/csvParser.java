@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author rory richter
+ *
+ */
 public class csvParser {
 
     /*
-     * This Pattern will match on either quoted text or text between commas, including
+     * This regEx Pattern will match on either quoted text or text between commas, including
      * whitespace, and accounting for beginning and end of line.
      */
     private final Pattern csvPattern = Pattern.compile("\"([^\"]*)\"|(?<=,|^)([^,]*)(?:,|$)");  
@@ -23,6 +27,8 @@ public class csvParser {
     }
 
     public String[] parse(String csvLine) {
+        allMatches = new ArrayList<String>();
+        matcher = null;    	
         matcher = csvPattern.matcher(csvLine);
         allMatches.clear();
         String match;
