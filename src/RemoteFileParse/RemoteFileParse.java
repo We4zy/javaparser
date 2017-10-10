@@ -34,6 +34,7 @@ public class RemoteFileParse {
 		        logger.log(Level.SEVERE, t + " RemoteFileParse threw an exception: ", e);
 		      };
 		  });
+		logger.addHandler(new ConsoleHandler());
 		
 		if (args != null && args.length >= 3) {
 			//Set the Buyer object Model with the incoming args provided in the command line args IE.  IPRemoteParse.exe 
@@ -74,13 +75,12 @@ public class RemoteFileParse {
 	                	
 	                	try {
 	                		//match the column header key string in map to the property in our container object.  Then use ordinal in map to snatch correct value from the String[]
-	                		Integer i = 0; Method methodProperty;
+	                		Method methodProperty;
 	                		for (Map.Entry<String, Integer> colMap:headerOrdinals) {
 	                			methodProperty = invoice.getClass().getMethod(String.format("set%s", colMap.getKey()), new Class[] {String.class});
 	                			
 	                			//dynamically set the matching property in our payment container object by matching the previously fetched column headers
 	                			if (methodProperty !=  null) methodProperty.invoke(invoice, columns[colMap.getValue()]);
-	                			i++;
 	                		}
 	                			//Our payment object should now be populated from the parsed line, now add to the collection that we shall POST to API as JSON.
 	                			payments.add(invoice);	                			                		
@@ -107,16 +107,21 @@ public class RemoteFileParse {
 		        } catch (FileNotFoundException e) {
 					logger.log(Level.WARNING, String.format("No file found to process : %s", e.getMessage()), Thread.currentThread().getStackTrace());
 		            e.printStackTrace();
-		            //Log this locally in custom event log and send
+		            //Log this locally in custom event log and send 
 		        } catch (IOException e) {
 					logger.log(Level.WARNING, String.format("IOException when attempting to access payment file for processing : %s", e.getMessage()), Thread.currentThread().getStackTrace());
 		            e.printStackTrace();
 		            //log both locally and send log to us via API call
 		        } finally {
 		            if (br != null) {
+		            	double invoiceTotal = 0.0;
 		                try { 
 		                    br.close();
+		                    for (Models.Payment payment:payments) invoiceTotal += Double.parseDouble(payment.getDocAmount());
+		                    
+		                	System.out.println(String.format("Buyer %s: File %s parsed without errors on %s.  Invoice count %s.  Payment file total $%s", buyerInfo.getBuyerId(), file.getName(), Instant.now(), payments.size(), invoiceTotal)); 
 		                } catch (IOException e) {
+		                	logger.log(Level.WARNING, String.format("IOException when attempting to access payment file for processing : %s", e.getMessage()), Thread.currentThread().getStackTrace());
 		                    e.printStackTrace();
 		                    //again, log locally and to us via API any problems here
 		                }
@@ -125,8 +130,8 @@ public class RemoteFileParse {
 		
 		        String json = new Gson().toJson(payments);
 		        //the above payload is the payload to send the payment batch to our API
-				System.out.println(json);	
-				
+				//System.out.println(json);	
+				logger.log(Level.INFO, "JSON Payload that would send " + json, new Object[] {});
 				//POST our beautifully constructed invoice[] as JSON to our API
 		        try {
 		        	//We want the payment batch to be processed as a batch for good batch logging, so each file's payload should be posted to the API separately as json for adequate batch processing
