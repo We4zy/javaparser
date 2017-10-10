@@ -9,6 +9,7 @@ import org.omg.PortableServer.ServantRetentionPolicyValue;
 import com.google.gson.Gson;
 
 import Models.Payment;
+import Models.PaymentPost;
 
 import java.io.*;
 //import org.apache.http.impl.client.HttpClientBuilder;
@@ -25,6 +26,7 @@ public class RemoteFileParse {
 	private static List<Map.Entry<String, Integer>> headerOrdinals;
 	//local logging to custom named Event Log is mandatory as well as the remote logging to us via our API
 	private static final Logger logger = Logger.getLogger(RemoteFileParse.class.getName());
+	private static PaymentPost<Payment> paymentPost;
 	
 	public static void main(String[] args) {
 		//Check incoming variables for the command line call.  We will send in 
@@ -34,7 +36,6 @@ public class RemoteFileParse {
 		        logger.log(Level.SEVERE, t + " RemoteFileParse threw an exception: ", e);
 		      };
 		  });
-		logger.addHandler(new ConsoleHandler());
 		
 		if (args != null && args.length >= 3) {
 			//Set the Buyer object Model with the incoming args provided in the command line args IE.  IPRemoteParse.exe 
@@ -53,15 +54,16 @@ public class RemoteFileParse {
         BufferedReader br = null;
         String line = "";
 		String[] columns;
-		List<Models.Payment> payments = null;
+		List<Payment> payments = null;
 		Boolean headerRow = true;
 		
         	//Get all possible files in the configured directory that match our file mask and iterate, parse and send json payload for each
         for (File file:findFileByMask(buyerInfo)) {	
     		headerOrdinals = new ArrayList<Map.Entry<String, Integer>>();
+    		paymentPost = new PaymentPost<Payment>();
         	try {
         		headerRow = true;
-        		payments = new ArrayList<Models.Payment>();
+        		payments = new ArrayList<Payment>();
 	        	String[] columnHeaders = null;
 	            br = new BufferedReader(new FileReader(file.getPath()));
 	            csvParser parser = new csvParser();
@@ -71,7 +73,7 @@ public class RemoteFileParse {
 	                            	
 	                //for the first row, grab the column header names and match against our container object, each iteration thereafter, just stuff values in our object[] which will become a json payload
 	                if (!headerRow) { 
-	                	Models.Payment invoice = new Models.Payment();
+	                	Payment invoice = new Payment();
 	                	
 	                	try {
 	                		//match the column header key string in map to the property in our container object.  Then use ordinal in map to snatch correct value from the String[]
@@ -119,7 +121,9 @@ public class RemoteFileParse {
 		                    br.close();
 		                    for (Models.Payment payment:payments) invoiceTotal += Double.parseDouble(payment.getDocAmount());
 		                    
-		                	System.out.println(String.format("Buyer %s: File %s parsed without errors on %s.  Invoice count %s.  Payment file total $%s", buyerInfo.getBuyerId(), file.getName(), Instant.now(), payments.size(), invoiceTotal)); 
+		                	String successMessage = String.format("Buyer %s: File %s parsed without errors on %s.  Invoice count %s.  Payment file total $%s", buyerInfo.getBuyerId(), file.getName(), Instant.now(), payments.size(), invoiceTotal);
+		                	logger.log(Level.INFO, successMessage, new Object[] {});
+		                	paymentPost.addAMessage(successMessage);
 		                } catch (IOException e) {
 		                	logger.log(Level.WARNING, String.format("IOException when attempting to access payment file for processing : %s", e.getMessage()), Thread.currentThread().getStackTrace());
 		                    e.printStackTrace();
@@ -130,10 +134,11 @@ public class RemoteFileParse {
 		
 		        String json = new Gson().toJson(payments);
 		        //the above payload is the payload to send the payment batch to our API
-				//System.out.println(json);	
-				logger.log(Level.INFO, "JSON Payload that would send " + json, new Object[] {});
+				logger.log(Level.INFO, "JSON Payload to send " + json, new Object[] {});
+				
 				//POST our beautifully constructed invoice[] as JSON to our API
 		        try {
+		        	//paymentPost.setPayments((Payment[])payments.toArray());
 		        	//We want the payment batch to be processed as a batch for good batch logging, so each file's payload should be posted to the API separately as json for adequate batch processing
 		        	
 		        	//HttpClient httpClient = HttpClientBuilder.create().build();
@@ -177,13 +182,11 @@ public class RemoteFileParse {
                 	
                 	try {
                 		//match the column header key string in map to the property in our container object.  Then use ordinal in map to snatch correct value from the String[]
-                		Integer i = 0;
                 		for (Map.Entry<String, Integer> colMap:headerOrdinals) {
                 			Method methodProperty = invoice.getClass().getMethod(String.format("set%s", colMap.getKey()), new Class[] {String.class});
                 			
                 			//dynamically set the matching property in our payment container object by matching the previously fetched column headers
                 			if (methodProperty !=  null) methodProperty.invoke(invoice, columns[colMap.getValue()]);
-                			i++;
                 		}
                 			//Our payment object should now be populated from the parsed line, now add to the collection that we shall POST to API as JSON.
                 			payments.add(invoice);                	
@@ -227,8 +230,8 @@ public class RemoteFileParse {
 	        }
 	
 	        String json = new Gson().toJson(payments);
-	        //the above payload is the payload to send the payment batch to our API
-			System.out.println(json);	
+	        //the above payload is the payload to send the payment batch to our API	
+			logger.log(Level.INFO, "Json Payload to send: " + json, new Object[] {});
 			
 			//POST our beautifully constructed invoice[] as JSON to our API
 	        try {
@@ -290,9 +293,10 @@ public class RemoteFileParse {
 			errorMessage += String.format(" Not all column headers found were mappable.  There are %s extra column headers in file. ", discrepencyCount.toString());
 			logger.log(Level.WARNING, errorMessage, Thread.currentThread().getStackTrace());
 		}
-		
-		errorMessage = String.format("File %s mapped perfectly.  No file format errors found on %s", fileName, Instant.now());
-		System.out.println(errorMessage);
+		else {
+		//errorMessage = String.format("File %s mapped perfectly.  No file format errors found on %s", fileName, Instant.now());
+		logger.log(Level.INFO, String.format("File %s mapped perfectly.  No file format errors found on %s", fileName, Instant.now()), new Object[] {});
+		}
 		//log the results locally and send collected info to our API for remote logging
 		if (foundCount == 0) return false;
 		else return true;
@@ -322,8 +326,7 @@ public class RemoteFileParse {
 			} 
 			finally {
 				String filesMessage = String.format("Payment files found to be processed on %s, files : %s", Instant.now(), Arrays.toString(files));
-				logger.log(Level.FINE, filesMessage, Thread.currentThread().getStackTrace());     	
-				System.out.println(filesMessage);
+				logger.log(Level.INFO, filesMessage, Thread.currentThread().getStackTrace());     	
 				//log the number and names of the found files.  Log via our API.  "Buyer ID = <> found" + files.count()  + " files on <TimeStamp> to process.  Files found : " + files.toString();
         }
 		
